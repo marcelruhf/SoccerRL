@@ -5,7 +5,7 @@
 * @Project: SoccerRL
 * @Filename: BallTracker.cpp
 * @Last modified by:   marcel
-* @Last modified time: 2017-02-15T21:33:22+00:00
+* @Last modified time: 2017-02-15T22:16:36+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -32,7 +32,7 @@ private:
     cv::Mat src;  // Holds the image provided by the caller (either a static image or a video frame)
 public:
     void setImage(cv::Mat);  // Replaces the stored image within the object (used by the caller)
-    vector< vector<cv::Point> > getPos();  // Returns the position of the centre point of te ball to the caller
+    vector<cv::Vec3f> getPos();  // Returns the position of the centre point of te ball to the caller
 };
 
 void BallTracker::setImage(cv::Mat img)
@@ -51,11 +51,11 @@ vector<cv::Vec3f> BallTracker::getPos()
     cv::GaussianBlur(image, image, cv::Size(5, 5), 0, 0);
 
     // Initialize circles vector
-    vectr<cv:Vec3f> circles;
+    vector<cv::Vec3f> circles;
 
     // Perform Hough Circle Transformation
     cv::HoughCircles(image, circles, cv::HOUGH_GRADIENT, 2, image.cols/10);
 
     // For now, return the circles vector; will later be replaced with position on the matrix...
-    return cirlces;
+    return circles;
 }

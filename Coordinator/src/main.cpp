@@ -5,7 +5,7 @@
 * @Project: SoccerRL
 * @Filename: main.cpp
 * @Last modified by:   marcel
-* @Last modified time: 2017-02-15T21:56:20+00:00
+* @Last modified time: 2017-02-15T23:09:49+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -56,27 +56,26 @@ int main(int argc, char** argv)
         ball.setImage(frame);   // set image to the current frame
 
         // Retrieve contours
-        vector<int> ids = robot.getPos();
-        cout << "Size of ids: " << ids.size() << endl;
-        if (ids.size() > 0)
-        {
-            cout << "The identified ID is: " << ids.at(0) << endl;
-        }
+        vector< vector<cv::Point2f> > corners = robot.getPos();
+        cv::aruco::drawDetectedMarkers(frame, corners);
 
         // Get detected circles from the image
         vector<cv::Vec3f> circles = ball.getPos();
 
         // Draw circles...
-        for (int i = 0; i < circles.size(); ++i)
+        if (circles.size() > 0)
         {
-            cv::circle(
-                image,
-                cv::Point(cv::cvRound(circles[i][0]), cv::cvRound(circles[i][1])),
-                cv::cvRound(circles[i][2]),
-                cv::Scalar(0, 0, 255),
-                2,
-                cv::AA
-            );
+            for (int i = 0; i < circles.size(); ++i)
+            {
+                cv::circle(
+                    frame,
+                    cv::Point(cvRound(circles[i][0]), cvRound(circles[i][1])),
+                    cvRound(circles[i][2]),
+                    cv::Scalar(0, 0, 255),
+                    2,
+                    cv::LINE_AA
+                );
+            }
         }
 
         // Display
