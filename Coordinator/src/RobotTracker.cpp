@@ -4,8 +4,8 @@
 * @Email:  marcel@marcelruhf.me
 * @Project: SoccerRL
 * @Filename: RobotTracker.cpp
-* @Last modified by:   marcelruhf
-* @Last modified time: 2017-02-07T13:20:53+00:00
+* @Last modified by:   marcel
+* @Last modified time: 2017-02-07T15:44:56+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -24,17 +24,17 @@ private:
     MarkerFinder marker;
 public:
     void setImage(cv::Mat);
-    vector< vector<cv::Point2f> > getPos();
+    vector<int> getPos();
 };
 
 void RobotTracker::setImage(cv::Mat img) {
     image = img;
 }
 
-vector< vector<cv::Point2f> > RobotTracker::getPos() {
-    cv::Mat thrImg;
-    cv::cvtColor(this->image, thrImg, cv::COLOR_BGR2GRAY);
-    cv::threshold(thrImg, thrImg, 128, 255, cv::THRESH_BINARY);
-    marker.setImage(thrImg);
+vector<int> RobotTracker::getPos() {
+    //cv::Mat thrImg;
+    //cv::cvtColor(this->image, thrImg, cv::COLOR_BGR2GRAY);
+    //cv::threshold(thrImg, thrImg, 128, 255, cv::THRESH_BINARY);
+    marker.setImage(image);
     return marker.getPos();
 }

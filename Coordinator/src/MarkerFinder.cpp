@@ -4,8 +4,8 @@
 * @Email:  marcel@marcelruhf.me
 * @Project: SoccerRL
 * @Filename: MarkerFinder.cpp
-* @Last modified by:   marcelruhf
-* @Last modified time: 2017-02-07T11:17:57+00:00
+* @Last modified by:   marcel
+* @Last modified time: 2017-02-07T16:43:00+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -25,17 +25,22 @@ private:
     cv::Mat image;
 public:
     void setImage(cv::Mat);
-    vector< vector<cv::Point2f> > getPos();
+    vector<int> getPos();
 };
 
 void MarkerFinder::setImage(cv::Mat img) {
     image = img;
 }
 
-vector< vector<cv::Point2f> > MarkerFinder::getPos() {
+vector<int> MarkerFinder::getPos() {
     vector<int> ids;
     vector< vector<cv::Point2f> > corners;
-    cv::Ptr<cv::aruco::Dictionary> dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);
+    cv::Ptr<cv::aruco::Dictionary> dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_7X7_50);
     cv::aruco::detectMarkers(image, dict, corners, ids);
-    return corners;
+    if (ids.at(0) == MARKER_ID) {
+        // Then it has successfully detected our robot...
+        return 
+    }
+
+    return ids;
 }

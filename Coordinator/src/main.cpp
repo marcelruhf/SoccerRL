@@ -4,8 +4,8 @@
 * @Email:  marcel@marcelruhf.me
 * @Project: SoccerRL
 * @Filename: main.cpp
-* @Last modified by:   marcelruhf
-* @Last modified time: 2017-02-07T13:05:56+00:00
+* @Last modified by:   marcel
+* @Last modified time: 2017-02-15T21:56:20+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -24,7 +24,8 @@
 
 using namespace std;
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     // Instantiate classes
     RobotTracker robot;
     BallTracker ball;
@@ -32,16 +33,18 @@ int main(int argc, char** argv) {
     cv::VideoCapture cap;
     cap.open(0);  // try to start capturing from USB camera...
 
-    if (!cap.isOpened()) {
+    if (!cap.isOpened())
+    {
         // Display an error, quit the application...
         cerr << "ERROR! Unable to open video stream!" << endl;
         return -1;
     } // otherwise, continue...
 
     cv::Mat frame;
-    cv::namedWindow("Live", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Live", cv::WINDOW_GUI_NORMAL);
 
-    for (;;) {
+    for (;;)
+    {
         cap.read(frame);
 
         if (frame.empty()) {  // stop program execution, since camera disconnected...
@@ -53,23 +56,36 @@ int main(int argc, char** argv) {
         ball.setImage(frame);   // set image to the current frame
 
         // Retrieve contours
-        auto robotCnts = robot.getPos();
-        cout << "Size of robotCnts: " << robotCnts.size() << endl;
-        auto ballCnts = ball.getPos();
-        cout << "Size of ballCnts: " << ballCnts.size() << endl;
+        vector<int> ids = robot.getPos();
+        cout << "Size of ids: " << ids.size() << endl;
+        if (ids.size() > 0)
+        {
+            cout << "The identified ID is: " << ids.at(0) << endl;
+        }
 
-        // Draw contours
-        cv::Mat newFrame = frame.clone();
-        cv::drawContours(newFrame, robotCnts, -1, cv::Scalar(99), cv::FILLED);
-        cv::drawContours(newFrame, ballCnts, -1, cv::Scalar(99), cv::FILLED);
+        // Get detected circles from the image
+        vector<cv::Vec3f> circles = ball.getPos();
+
+        // Draw circles...
+        for (int i = 0; i < circles.size(); ++i)
+        {
+            cv::circle(
+                image,
+                cv::Point(cv::cvRound(circles[i][0]), cv::cvRound(circles[i][1])),
+                cv::cvRound(circles[i][2]),
+                cv::Scalar(0, 0, 255),
+                2,
+                cv::AA
+            );
+        }
 
         // Display
-        cv::imshow("Live", newFrame);
-        if (cv::waitKey(30) == 'q') {
+        cv::imshow("Live", frame);
+        if (cv::waitKey(5) == 'q')
+        {
             break;
         }
     }
 
     return 0;
-
 }
