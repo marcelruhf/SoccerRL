@@ -5,19 +5,16 @@
 * @Project: SoccerRL
 * @Filename: BallTracker.cpp
 * @Last modified by:   marcel
-* @Last modified time: 2017-02-15T22:16:36+00:00
+* @Last modified time: 2017-02-16T14:02:06+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
 /**
-* This file uses Hough Circle Transformation to detect the presence of a ball.
-* My previous implementation attampted to detect the presence of a ball by applying
-* thresholding to a transformed image in HSV color space (hue, saturation, value).
-* This was achieved by specifying a range within the HSV color space, and blackening
-* everything not within that range so that only the object being tracked is visible.
-* However, upon closer inspection, it became clear that colors vary from time to time,
-* depending on room brightness (i.e. sunlight coming in at different levels throughout the day).
+* This class implements a ball tracking mechanism by thresholding the image
+* based on its HSV color space values (using a lower and upper limit).
+* Hough transformations were previously considered as well, but I determined
+* that the method implemented here is more suitable for this project.
 */
 
 #include <iostream>
@@ -32,7 +29,7 @@ private:
     cv::Mat src;  // Holds the image provided by the caller (either a static image or a video frame)
 public:
     void setImage(cv::Mat);  // Replaces the stored image within the object (used by the caller)
-    vector<cv::Vec3f> getPos();  // Returns the position of the centre point of te ball to the caller
+    vector< vector<cv::Point> > getPos();  // Returns the position of the centre point of te ball to the caller
 };
 
 void BallTracker::setImage(cv::Mat img)
@@ -40,22 +37,28 @@ void BallTracker::setImage(cv::Mat img)
     src = img;
 }
 
-vector<cv::Vec3f> BallTracker::getPos()
+vector< vector<cv::Point> > BallTracker::getPos()
 {
-    cv::Mat image;
+    cv::Mat image, mask;
+
+    cv::Scalar thresh_lower = cv::Scalar(29, 86, 6);
+    cv::Scalar thresh_upper = cv::Scalar(64, 255, 255);
 
     // Convert the image to grayscale (improves )
     cv::cvtColor(src, image, cv::COLOR_BGR2HSV);
 
-    // Blur the image, to remove noise
-    cv::GaussianBlur(image, image, cv::Size(5, 5), 0, 0);
+    // Create a "range" for the green color
+    cv::inRange(image, thresh_lower, thresh_upper, mask);
+    cv::erode(mask, mask, cv::Mat());
+    cv::dilate(mask, mask, cv::Mat());
 
-    // Initialize circles vector
-    vector<cv::Vec3f> circles;
+    // Initialize contours vector
+    vector< vector<cv::Point> > contours;
+    vector<cv::Vec4i> hierarchy;
 
-    // Perform Hough Circle Transformation
-    cv::HoughCircles(image, circles, cv::HOUGH_GRADIENT, 2, image.cols/10);
+    // Compute contours
+    cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     // For now, return the circles vector; will later be replaced with position on the matrix...
-    return circles;
+    return contours;
 }

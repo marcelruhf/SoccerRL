@@ -5,16 +5,16 @@
 * @Project: SoccerRL
 * @Filename: main.cpp
 * @Last modified by:   marcel
-* @Last modified time: 2017-02-15T23:09:49+00:00
+* @Last modified time: 2017-02-16T13:59:46+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
 /**
-* This is a file that tests the tracking capability of the current classes:
-* RobotTracker, which attempts to track the position of a robot using MarkerFinder
-* MarkerFinder, which attempts to detect aruco markers
-* BallTracker, which attempts to track the position of a yellow ball.
+* This file raws the contours retrieved from the marker and ball trackers onto
+* each frame and displays it to the user of the application.
+* It is being used, at the moment, for testing purposes only;
+* I will eventually replace it with a server providing the coordinates to the robot.
 */
 
 #include <iostream>
@@ -59,22 +59,15 @@ int main(int argc, char** argv)
         vector< vector<cv::Point2f> > corners = robot.getPos();
         cv::aruco::drawDetectedMarkers(frame, corners);
 
-        // Get detected circles from the image
-        vector<cv::Vec3f> circles = ball.getPos();
+        // Get detected contours from the image
+        vector< vector<cv::Point> > contours = ball.getPos();
 
         // Draw circles...
-        if (circles.size() > 0)
+        if (contours.size() > 0)
         {
-            for (int i = 0; i < circles.size(); ++i)
+            for( int i = 0; i < contours.size(); i++ )
             {
-                cv::circle(
-                    frame,
-                    cv::Point(cvRound(circles[i][0]), cvRound(circles[i][1])),
-                    cvRound(circles[i][2]),
-                    cv::Scalar(0, 0, 255),
-                    2,
-                    cv::LINE_AA
-                );
+                cv::drawContours(frame, contours, i, cv::Scalar(0, 0, 255));
             }
         }
 
