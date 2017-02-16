@@ -18,15 +18,6 @@
 
 using namespace std;
 
-class RobotTracker {
-private:
-    cv::Mat image;
-    MarkerFinder marker;
-public:
-    void setImage(cv::Mat);
-    vector< vector<cv::Point2f> > getPos();
-};
-
 void RobotTracker::setImage(cv::Mat img) {
     image = img;
 }

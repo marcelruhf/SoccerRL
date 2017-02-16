@@ -5,7 +5,7 @@
 * @Project: SoccerRL
 * @Filename: main.cpp
 * @Last modified by:   marcel
-* @Last modified time: 2017-02-16T13:59:46+00:00
+* @Last modified time: 2017-02-16T14:30:09+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -57,7 +57,9 @@ int main(int argc, char** argv)
 
         // Retrieve contours
         vector< vector<cv::Point2f> > corners = robot.getPos();
-        cv::aruco::drawDetectedMarkers(frame, corners);
+        if (corners.size() > 0) {
+            cv::aruco::drawDetectedMarkers(frame, corners);
+        }
 
         // Get detected contours from the image
         vector< vector<cv::Point> > contours = ball.getPos();
@@ -67,7 +69,9 @@ int main(int argc, char** argv)
         {
             for( int i = 0; i < contours.size(); i++ )
             {
-                cv::drawContours(frame, contours, i, cv::Scalar(0, 0, 255));
+                if (contours.at(i).size() > 0) {
+                    cv::drawContours(frame, contours, i, cv::Scalar(0, 0, 255));
+                }
             }
         }
 
