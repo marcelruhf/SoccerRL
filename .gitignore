@@ -153,3 +153,7 @@ dkms.conf
 *.ilk
 *.map
 *.exp
+
+# Mac/Windows specific files
+thumbs.db
+.DS_Store
