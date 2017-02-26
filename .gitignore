@@ -157,3 +157,4 @@ dkms.conf
 # Mac/Windows specific files
 thumbs.db
 .DS_Store
+cpplint.py
