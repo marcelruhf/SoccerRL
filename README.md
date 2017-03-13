@@ -58,4 +58,4 @@ cmake .
 make
 ```
 
-This creates an executable called SoccerRL in ```shell /path/to/SoccerRL/Tracker/bin```.
+This creates an executable called ```SoccerRL``` in ```/path/to/SoccerRL/Tracker/bin```.
