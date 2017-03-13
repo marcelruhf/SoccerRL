@@ -1,11 +1,8 @@
 /**
 * @Author: Marcel Ruhf <marcelruhf>
-* @Date:   2017-01-28T08:34:17+00:00
-* @Email:  marcel@marcelruhf.me
+* @Email:  m.ruhf@protonmail.ch
 * @Project: SoccerRL
 * @Filename: BallTracker.cpp
-* @Last modified by:   marcelruhf
-* @Last modified time: 2017-02-16T14:02:06+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
@@ -20,6 +17,7 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
+#include <cmath>
 #include <opencv2/imgproc.hpp>
 #include "BallTracker.hpp"
 
@@ -30,14 +28,14 @@ namespace mr
         src = img;
     }
 
-    cv::Point2f BallTracker::getPos()
+    cv::Point2f BallTracker::getData()
     {
         cv::Mat image, mask;
 
         cv::Scalar thresh_lower = cv::Scalar(29, 86, 6);
         cv::Scalar thresh_upper = cv::Scalar(64, 255, 255);
 
-        // Convert the image to grayscale
+        // Convert the image to HSV
         cv::cvtColor(src, image, cv::COLOR_BGR2HSV);
 
         // Create a "range" for the green color
@@ -51,10 +49,10 @@ namespace mr
 
         // Compute contours
         cv::findContours(mask, contours, hierarchy,
-          cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+                         cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
         // Compute the largest contour
-        int largest_area = -1;
+        double largest_area = 0.0;
         int largest_index = -1;
         if (contours.size() > 0)
         {
@@ -72,10 +70,14 @@ namespace mr
         // Now, use momets to get the center of the image
         if (largest_index >= 0)
         {
-            mu = cv::moments(contours[largest_index], true);
-            return cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+            cv::Moments mu = cv::moments(contours[largest_index], true);
+            cv::Point2f mc = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+
+            // Ball detected successfully, so return its center
+            // and its velocity...
+            return mc;
         }
 
-        return cv::Point2f(-1, -1);  // no ball present, return negative result
+        return cv::Point2f();  // no ball present, return negative result
     }
-}  // namespace mr
+}

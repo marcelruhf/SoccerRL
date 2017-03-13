@@ -1,5 +1,12 @@
 # Custom
 bin/
+CMakeFiles/
+cmake-build-debug/
+CMakeCache.txt
+*.cmake
+.idea/
+*.cbp
+Makefile
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

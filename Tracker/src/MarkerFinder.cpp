@@ -1,20 +1,18 @@
 /**
 * @Author: Marcel Ruhf <marcelruhf>
-* @Date:   2017-01-27T21:04:39+00:00
-* @Email:  marcel@marcelruhf.me
+* @Email:  m.ruhf@protonmail.ch
 * @Project: SoccerRL
 * @Filename: MarkerFinder.cpp
-* @Last modified by:   marcelruhf
-* @Last modified time: 2017-02-16T14:29:27+00:00
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
-#include <iostream>
+#include <tuple>
 #include <vector>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/aruco.hpp>
 #include "MarkerFinder.hpp"
+#include "Constants.hpp"
 
 namespace mr
 {
@@ -23,25 +21,30 @@ namespace mr
         image = img;
     }
 
-    std::vector< std::vector<cv::Point2f> > MarkerFinder::getPos()
+    std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d>, std::vector< std::vector<cv::Point2f> > >
+    MarkerFinder::getData()
     {
         std::vector<int> ids;
         std::vector< std::vector<cv::Point2f> > corners;
-        cv::Ptr<cv::aruco::Dictionary> dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_7X7_50);
+        cv::Ptr<cv::aruco::Dictionary> dict = cv::aruco::getPredefinedDictionary(
+                cv::aruco::DICT_7X7_50
+        );
         cv::aruco::detectMarkers(image, dict, corners, ids);
 
-        if (ids.size() > 0)
+        if (ids.size() == 1)
         {
             if (ids.at(0) == MARKER_ID)
             {
                 // Then it has successfully detected our robot...
-                // ...or hasn't detected any
-                return corners;
+                std::vector<cv::Vec3d> rvecs, tvecs;
+                cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
+
+                return std::make_tuple(corners.at(0), rvecs, tvecs, corners);
             }
         }
 
-        // Else, the corners vector contains rejected markers...
+        // Else, the corners vector contains rejected or no markers...
         // ...so reject them
-        return std::vector< std::vector<cv::Point2f> >();
+        return std::make_tuple(std::vector<cv::Point2f>(), std::vector<cv::Vec3d>(), std::vector<cv::Vec3d>(), std::vector< std::vector<cv::Point2f> >());
     }
-}  // namespace mr
+}
