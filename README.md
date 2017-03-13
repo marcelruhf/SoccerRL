@@ -13,6 +13,7 @@ See LICENSE.md for more details.
 
 This application was so far tested using the following libraries:
 * OpenCV v3.2.0
+* Boost v1.63.0
 
 This application was tested on the following Operating System(s):
 * MacOS Sierra (v10.12)
@@ -37,3 +38,24 @@ This application was tested on the following Operating System(s):
 
 * Sam Wilson (S.S.Wilson@leeds.ac.uk)
 * Andy Bulpitt (A.J.Bulpitt@leeds.ac.uk)
+
+## Installing Prerequisites
+
+Before compiling this project, you will need to have installed the prerequisites listed above. These instructions work for macOS X only. I am also assuming that you have Homebrew installed already.
+
+```shell
+brew install opencv3 --with-contrib  # YOU MUST INCLUDE THE contrib libraries!
+brew install boost
+```
+
+## Compile
+
+To run this project, you will need to compile it first.
+
+```shell
+cd /path/to/SoccerRL
+cmake .
+make
+```
+
+This creates an executable called SoccerRL in ```shell /path/to/SoccerRL/Tracker/bin```.
