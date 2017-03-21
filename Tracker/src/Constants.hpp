@@ -2,13 +2,13 @@
 * @Author: Marcel Ruhf <marcelruhf>
 * @Email:  m.ruhf@protonmail.ch
 * @Project: SoccerRL
-* @Filename: main.cpp
+* @Filename: Constants.hpp
 * @License: Licensed under the Apache 2.0 license (see LICENSE.md)
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
-#ifndef SOCCERRL_CONSTANTS_H_
-#define SOCCERRL_CONSTANTS_H_
+#ifndef SOCCERRL_TRACKER_CONSTANTS_HPP_
+#define SOCCERRL_TRACKER_CONSTANTS_HPP_
 
 #include <opencv2/core.hpp>
 
@@ -24,6 +24,10 @@ namespace mr
             -6.6619218845551539e-02, -1.6078474996774328e-01,
             2.6155997675212489e-03
     );
+
+    const double ONE_POUND_PIXELS   = 34.9;  // pixels
+    const double ONE_POUND_DIAMETER = 22.5;  // milimetres
+    const double PIXELS_PER_MM      = ONE_POUND_PIXELS / ONE_POUND_DIAMETER;
 }  // namespace mr
 
-#endif  // SOCCERRL_CONSTANTS_H_
+#endif  // SOCCERRL_TRACKER_CONSTANTS_HPP_

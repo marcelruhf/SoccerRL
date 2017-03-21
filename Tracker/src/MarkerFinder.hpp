@@ -7,8 +7,8 @@
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
-#ifndef SOCCERRL_COORDINATOR_MARKERFINDER_H_
-#define SOCCERRL_COORDINATOR_MARKERFINDER_H_
+#ifndef SOCCERRL_TRACKER_MARKERFINDER_HPP_
+#define SOCCERRL_TRACKER_MARKERFINDER_HPP_
 
 #define MARKER_ID 29
 
@@ -25,8 +25,8 @@ namespace mr
         cv::Mat image;
     public:
         void setImage(cv::Mat);
-        std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d>, std::vector< std::vector<cv::Point2f> > > getData();
+        std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > getPos();
     };
 }
 
-#endif
+#endif  // SOCCERRL_TRACKER_MARKERFINDER_HPP_

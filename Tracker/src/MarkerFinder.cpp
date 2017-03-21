@@ -21,8 +21,8 @@ namespace mr
         image = img;
     }
 
-    std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d>, std::vector< std::vector<cv::Point2f> > >
-    MarkerFinder::getData()
+    std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> >
+    MarkerFinder::getPos()
     {
         std::vector<int> ids;
         std::vector< std::vector<cv::Point2f> > corners;
@@ -39,12 +39,12 @@ namespace mr
                 std::vector<cv::Vec3d> rvecs, tvecs;
                 cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
 
-                return std::make_tuple(corners.at(0), rvecs, tvecs, corners);
+                return std::make_tuple(corners.at(0), rvecs, tvecs);
             }
         }
 
         // Else, the corners vector contains rejected or no markers...
         // ...so reject them
-        return std::make_tuple(std::vector<cv::Point2f>(), std::vector<cv::Vec3d>(), std::vector<cv::Vec3d>(), std::vector< std::vector<cv::Point2f> >());
+        return std::make_tuple(std::vector<cv::Point2f>(), std::vector<cv::Vec3d>(), std::vector<cv::Vec3d>());
     }
 }

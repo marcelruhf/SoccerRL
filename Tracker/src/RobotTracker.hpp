@@ -7,8 +7,8 @@
 * @Copyright: Copyright (c) 2017 Marcel Ruhf
 */
 
-#ifndef SOCCERRL_COORDINATOR_ROBOTTRACKER_H_
-#define SOCCERRL_COORDINATOR_ROBOTTRACKER_H_
+#ifndef SOCCERRL_TRACKER_ROBOTTRACKER_HPP_
+#define SOCCERRL_TRACKER_ROBOTTRACKER_HPP_
 
 #include <vector>
 #include <opencv2/core/mat.hpp>
@@ -24,8 +24,8 @@ namespace mr
         MarkerFinder marker;
     public:
         void setImage(cv::Mat);
-        std::tuple< cv::Point2f, std::vector<cv::Vec3d>, std::vector<cv::Vec3d>, std::vector< std::vector<cv::Point2f> > > getPos();
+        std::tuple< cv::Point3f, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > getPos();
     };
 }  // namespace mr
 
-#endif
+#endif  // SOCCERRL_TRACKER_ROBOTTRACKER_HPP_

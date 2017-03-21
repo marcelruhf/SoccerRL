@@ -19,7 +19,9 @@
 #include <vector>
 #include <cmath>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 #include "BallTracker.hpp"
+#include "Constants.hpp"
 
 namespace mr
 {
@@ -28,7 +30,7 @@ namespace mr
         src = img;
     }
 
-    cv::Point2f BallTracker::getData()
+    cv::Point3f BallTracker::getData()
     {
         cv::Mat image, mask;
 
@@ -70,14 +72,30 @@ namespace mr
         // Now, use momets to get the center of the image
         if (largest_index >= 0)
         {
+            std::vector<cv::Point> largest_contour = contours[largest_index];
+            std::vector<cv::Point2f> contour_points(largest_contour.begin(), largest_contour.end());
+            cv::Mat rotation_matrix, rvecs, tvecs;
+            cv::solvePnP(contour_points, src, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
+            cv::Rodrigues(rvecs, rotation_matrix);
+
             cv::Moments mu = cv::moments(contours[largest_index], true);
-            cv::Point2f mc = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+            cv::Point2f relative_ball_centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+
+            cv::Mat uvPoint = cv::Mat::ones(3, 1, cv::DataType<double>::type);
+            uvPoint.at<double>(0, 0) = relative_ball_centroid.x;
+            uvPoint.at<double>(1, 0) = relative_ball_centroid.y;
+
+            cv::Mat rMat = rotation_matrix.inv() * CAMERA_MATRIX.inv() * uvPoint;
+            cv::Mat tMat = rotation_matrix.inv() * tvecs;
+
+            double s = tMat.at<double>(2, 0) / rMat.at<double>(2, 0);
+            cv::Mat wcPoint = rotation_matrix.inv() * (s * CAMERA_MATRIX.inv() * uvPoint - tvecs);
 
             // Ball detected successfully, so return its center
             // and its velocity...
-            return mc;
+            return cv::Point3f(wcPoint.at<double>(0,0), wcPoint.at<double>(1,0), wcPoint.at<double>(2,0));;
         }
 
-        return cv::Point2f();  // no ball present, return negative result
+        return cv::Point3f();  // no ball present, return negative result
     }
 }

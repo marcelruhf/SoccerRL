@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     cv::VideoCapture cap;
     cap.set(cv::CAP_PROP_FPS, 25);  // Allows us to calculate velocity...
 
-    cap.open(1);  // try to start capturing from USB camera...
+    cap.open(0);  // try to start capturing from USB camera...
     if (!cap.isOpened())
     {
         // Display an error, quit the application...
@@ -101,24 +101,25 @@ int main(int argc, char **argv)
                 return 0;
             }  // ... else, continue...
 
-            cv::imwrite("/users/marcelruhf/Documents/output.jpg", frame);
+            cv::imwrite("/users/marcelruhf/Documents/output2.jpg", frame);
+            std::cout << "Written" << std::endl;
+            break;
 
             robot.setImage(frame);  // set image to the current frame
             ball.setImage(frame);   // set image to the current frame
 
-            std::tuple< cv::Point2f, std::vector<cv::Vec3d>, std::vector<cv::Vec3d>, std::vector< std::vector<cv::Point2f> > > rdata = robot.getPos();
-            std::vector<cv::Vec3d> rvecs = (std::vector<cv::Vec3d>) std::get<1>(rdata);
-            std::vector<cv::Vec3d> tvecs = (std::vector<cv::Vec3d>) std::get<2>(rdata);
+            //std::tuple< cv::Point3f, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > rdata = robot.getPos();
+            //std::vector<cv::Vec3d> rvecs = (std::vector<cv::Vec3d>) std::get<1>(rdata);
+            //std::vector<cv::Vec3d> tvecs = (std::vector<cv::Vec3d>) std::get<2>(rdata);
             //std::cout << "rvecs size: " << rvecs.size() << std::endl;
             //std::cout << rvecs.at(0) << std::endl;
-            //cv::Point2f ball_center = ball.getData();
-            //std::cout << "Coordinates: (" << ball_center.x << "," << ball_center.y << ")" << std::endl;
+            //cv::Point3f ball_center = ball.getData();
+            //std::cout << "Coordinates: (" << ball_center.x << "," << ball_center.y << "," << ball_center.z << ")" << std::endl;
 
-            if (rvecs.size() > 0 && tvecs.size() > 0)
-                cv::aruco::drawAxis(frame, mr::CAMERA_MATRIX, mr::DISTORTION_COEFFICIENTS, rvecs.at(0), tvecs.at(0), 0.1);
-            cv::aruco::drawDetectedMarkers(frame, std::get<3>(robot.getPos()));
+            //if (rvecs.size() > 0 && tvecs.size() > 0)
+                //cv::aruco::drawAxis(frame, mr::CAMERA_MATRIX, mr::DISTORTION_COEFFICIENTS, rvecs.at(0), tvecs.at(0), 0.1);
 
-            std::string message = data_string(frame, robot.getPos(), ball.getData());
+            //std::string message = data_string(frame, robot.getPos(), ball.getData());
             //std::cout << message << std::endl;
             //boost::asio::write(socket, boost::asio::buffer(message), write_error);
             cv::imshow("Live", frame);
