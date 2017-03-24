@@ -12,8 +12,9 @@ See LICENSE.md for more details.
 ## Requirements
 
 This application was so far tested using the following libraries:
-* OpenCV v3.2.0
-* Boost v1.63.0
+* OpenCV v3.2.x
+* Boost v1.63.x
+* CMake v3.7.x
 
 This application was tested on the following Operating System(s):
 * MacOS Sierra (v10.12)
