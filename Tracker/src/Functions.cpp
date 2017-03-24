@@ -49,7 +49,7 @@ namespace mr
         //root.add("arb", arb);
 
         // Determine distance between robot and ball in terms of the X axis
-        int drbx = std::floor(ball_centroid.x - robot_centroid.x);
+        int drbx = std::floor((ball_centroid.x - robot_centroid.x) / PIXELS_PER_MM);
         root.add("drbx", drbx);
 
         std::ostringstream buf;
