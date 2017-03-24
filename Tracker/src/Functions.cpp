@@ -38,8 +38,15 @@ namespace mr
         boost::property_tree::ptree root;  // root element for json
 
         // Calculate distance between ball and
-        int drb = std::floor(distEuclidMM(robot_centroid, ball_centroid));
-        root.add("drb", drb);
+        double drb = distEuclidMM(robot_centroid, ball_centroid);
+        if (std::floor(std::fabs(drb)) == 0)
+        {
+            root.add("drb", 0);
+        }
+        else
+        {
+            root.add("drb", std::floor(drb));
+        }
 
         //double len1 = std::hypot(robot_centroid.x, robot_centroid.y);
         //double len2 = std::hypot(ball_centroid.x, ball_centroid.y);
@@ -49,8 +56,15 @@ namespace mr
         //root.add("arb", arb);
 
         // Determine distance between robot and ball in terms of the X axis
-        int drbx = std::floor((ball_centroid.x - robot_centroid.x) / PIXELS_PER_MM);
-        root.add("drbx", drbx);
+        double drbx = (ball_centroid.x - robot_centroid.x) / PIXELS_PER_MM;
+        if (std::floor(std::fabs(drbx)) == 0)
+        {
+            root.add("drbx", 0);
+        }
+        else
+        {
+            root.add("drbx", std::floor(drbx));
+        }
 
         std::ostringstream buf;
         boost::property_tree::write_json(buf, root);
