@@ -11,14 +11,14 @@ class Logic {
     private float speed;
     // private final int distance_threshold;
 
-    Logic( final Keyboard keyboard, final Serial serial) {
-        mKeyboard = keyboard;
+    Logic( final MyClient client, final Serial serial) {
+        mClient = client;
         final PacketStore packetStore = new PacketStore(100);
         mProtocol = new Protocol(serial, packetStore);
 
         devices = new ArrayList<Device>();
 
-        /* create devices */
+        // create devices
         mMotor_a = new Motor();
         mMotor_b = new Motor();
         // mProximity = new Proximity();
@@ -28,13 +28,13 @@ class Logic {
         devices.add(new Device(Device.MOTOR, 1, (Protocable) mMotor_b));
         // devices.add(new Device(Device.PROXIMITY, 0, (Protocable) mProximity));
 
-        /* create processor for processing packets */
+        // create processor for processing packets
         final Processor processor = new Processor(devices, packetStore);
 
-        /* create vehicle, consisting from two motors */
+        // create vehicle, consisting from two motors
         mVehicle = new Vehicle(mMotor_a, mMotor_b);
 
-        speed = 0.2;
+        speed = 255;
 
         /* higher value, closer to obstacle
          * if too close, it is inverted
@@ -48,37 +48,40 @@ class Logic {
 
     /* main loop for keyboard */
     /* TODO two keys pressed at once do not work */
-    void keyboard() {
-        /* mKeyboard.getKey() - return pressed key */
-        /* mSkeleton.getRightHand() - return vec(x, y, z) */
-        /* mVehicle.stop() - stop vehicle */
+    void client() {
+        /*
+        mClient.getAction() - return action
+        mSkeleton.getRightHand() - return vec(x, y, z)
+        mVehicle.stop() - stop vehicle
+        */
 
-        switch (mKeyboard.getKey()) {
-        case 'w':
-            break;
-        case 'a':
+        switch (mClient.getAction()) {
+        case 'forward':
+            mMotor_a.forward(speed);
+            mMotor_b.forward(speed);
+        case 'left':
             mMotor_a.backward(speed);
             mMotor_b.forward(speed);
             break;
-        case 'd':
+        case 'right':
             mMotor_a.forward(speed);
             mMotor_b.backward(speed);
             break;
-        case 's':
+        case 'backward':
             mMotor_a.backward(speed);
             mMotor_b.backward(speed);
             break;
-        case 'r':
+        case 'speedup':
             speed += 0.1;
             break;
-        case 'f':
+        case 'slowdown':
             speed -= 0.1;
             break;
+        case 'stop':
+            stop();
         default:
-            mVehicle.stop();
+            stop();
         }
-
-        postExecute();
     }
 
     void stop() {
@@ -97,7 +100,7 @@ class Logic {
             }
         }
 
-        /* 8 ms per frame */
+        // 8 ms per frame
         delay(8);
     }
 }
