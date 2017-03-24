@@ -9,9 +9,11 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 include_directories( ${Boost_INCLUDE_DIRS} )
 
 set(SOURCE_FILES
+    Tracker/src/Constants.hpp
+    Tracker/src/Functions.hpp
+    Tracker/src/Functions.cpp
     Tracker/src/BallTracker.hpp
     Tracker/src/BallTracker.cpp
-    Tracker/src/Constants.hpp
     Tracker/src/MarkerFinder.hpp
     Tracker/src/MarkerFinder.cpp
     Tracker/src/RobotTracker.hpp

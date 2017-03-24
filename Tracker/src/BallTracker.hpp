@@ -10,6 +10,7 @@
 #ifndef SOCCERRL_TRACKER_BALLTRACKER_HPP_
 #define SOCCERRL_TRACKER_BALLTRACKER_HPP_
 
+#include <boost/optional.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 
@@ -21,7 +22,7 @@ namespace mr
         cv::Mat src;  // Holds the image provided by the caller (either a static image or a video frame)
     public:
         void setImage(cv::Mat);  // Replaces the stored image within the object (used by the caller)
-        cv::Point3f getData();  // Returns the position of the centre point of te ball and its velocity to the caller
+        boost::optional<cv::Point2f> getPos();  // Returns the position of the centre point of te ball and its velocity to the caller
     };
 }
 

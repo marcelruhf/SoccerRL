@@ -25,9 +25,9 @@ namespace mr
             2.6155997675212489e-03
     );
 
-    const double ONE_POUND_PIXELS   = 34.9;  // pixels
-    const double ONE_POUND_DIAMETER = 22.5;  // milimetres
-    const double PIXELS_PER_MM      = ONE_POUND_PIXELS / ONE_POUND_DIAMETER;
+    const double ONE_POUND_PIXELS   = 34.9;                                   // pixels
+    const double ONE_POUND_DIAMETER = 22.5;                                   // milimetres
+    const double PIXELS_PER_MM      = ONE_POUND_PIXELS / ONE_POUND_DIAMETER;  // pixels
 }  // namespace mr
 
 #endif  // SOCCERRL_TRACKER_CONSTANTS_HPP_

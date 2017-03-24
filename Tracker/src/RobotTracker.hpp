@@ -24,7 +24,7 @@ namespace mr
         MarkerFinder marker;
     public:
         void setImage(cv::Mat);
-        std::tuple< cv::Point3f, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > getPos();
+        boost::optional< std::tuple<cv::Point2f, cv::Vec3d, cv::Vec3d> > getPos();
     };
 }  // namespace mr
 

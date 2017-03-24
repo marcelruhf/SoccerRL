@@ -9,7 +9,8 @@
 
 #include <tuple>
 #include <vector>
-#include <opencv2/imgproc.hpp>
+#include <boost/optional.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include "MarkerFinder.hpp"
 #include "Constants.hpp"
@@ -21,7 +22,7 @@ namespace mr
         image = img;
     }
 
-    std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> >
+    boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > >
     MarkerFinder::getPos()
     {
         std::vector<int> ids;
@@ -31,20 +32,17 @@ namespace mr
         );
         cv::aruco::detectMarkers(image, dict, corners, ids);
 
-        if (ids.size() == 1)
+        if (ids.size() == 1 && ids.at(0) == MARKER_ID)
         {
-            if (ids.at(0) == MARKER_ID)
-            {
-                // Then it has successfully detected our robot...
-                std::vector<cv::Vec3d> rvecs, tvecs;
-                cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
-
-                return std::make_tuple(corners.at(0), rvecs, tvecs);
-            }
+            // Then it has successfully detected our robot...
+            std::vector<cv::Vec3d> rvecs, tvecs;
+            cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
+            return std::make_tuple(corners.at(0), rvecs, tvecs);
         }
 
         // Else, the corners vector contains rejected or no markers...
         // ...so reject them
-        return std::make_tuple(std::vector<cv::Point2f>(), std::vector<cv::Vec3d>(), std::vector<cv::Vec3d>());
+        return boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>,
+                std::vector<cv::Vec3d> > >{};
     }
 }

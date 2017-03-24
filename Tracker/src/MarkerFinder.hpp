@@ -25,7 +25,7 @@ namespace mr
         cv::Mat image;
     public:
         void setImage(cv::Mat);
-        std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > getPos();
+        boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > > getPos();
     };
 }
 
