@@ -56,6 +56,7 @@ class Logic {
         */
 
         switch (mClient.getAction()) {
+<<<<<<< HEAD
         case 'FORWARD':
             mMotor_a.forward(speed);
             mMotor_b.forward(speed);
@@ -82,8 +83,6 @@ class Logic {
         default:
             mVehicle.stop();
         }
-
-        postExecute();
     }
 
     void stop() {
