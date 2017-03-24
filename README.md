@@ -44,7 +44,7 @@ This application was tested on the following Operating System(s):
 Before compiling this project, you will need to have installed the prerequisites listed above. These instructions work for macOS X only. I am also assuming that you have Homebrew installed already.
 
 ```shell
-brew install opencv3 --with-tbb --with-contrib  # YOU MUST INCLUDE THE tbb ANDcontrib libraries!
+brew install opencv3 --with-tbb --with-contrib  # YOU MUST INCLUDE THE tbb AND contrib LIBRARIES!
 brew install boost
 ```
 
