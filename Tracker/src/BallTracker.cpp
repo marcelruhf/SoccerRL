@@ -17,6 +17,8 @@
 #include <boost/optional.hpp>
 #include <cmath>
 #include <opencv2/opencv.hpp>
+#include "Constants.hpp"
+#include "Functions.hpp"
 #include "BallTracker.hpp"
 
 namespace mr
@@ -26,7 +28,17 @@ namespace mr
         src = img;
     }
 
-    boost::optional<cv::Point2f> BallTracker::getPos()
+    int BallTracker::getVelocity()
+    {
+        if (!previous || !current)
+        {
+            return 0;
+        }
+        double distTravelled = distEuclidMM(*previous, *current);
+        return static_cast<int>(std::roud(distTravelled));
+    }
+
+    std::vector< std::vector<cv::Point> > BallTracker::getPossibleContours()
     {
         cv::Mat image, mask;
 
@@ -38,8 +50,34 @@ namespace mr
 
         // Create a "range" for the green color
         cv::inRange(image, thresh_lower, thresh_upper, mask);
-        cv::erode(mask, mask, cv::Mat());
-        cv::dilate(mask, mask, cv::Mat());
+        cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
+        cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
+
+        // Initialize contours vector
+        std::vector< std::vector<cv::Point> > contours;
+        std::vector<cv::Vec4i> hierarchy;
+
+        // Compute contours
+        cv::findContours(mask, contours, hierarchy,
+                         cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+        return contours;
+    }
+
+    boost::optional<cv::Point2f> BallTracker::getCentrePoint()
+    {
+        cv::Mat image, mask;
+
+        cv::Scalar thresh_lower = cv::Scalar(29, 86, 6);
+        cv::Scalar thresh_upper = cv::Scalar(64, 255, 255);
+
+        // Convert the image to HSV
+        cv::cvtColor(src, image, cv::COLOR_BGR2HSV);
+
+        // Create a "range" for the green color
+        cv::inRange(image, thresh_lower, thresh_upper, mask);
+        cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
+        cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
 
         // Initialize contours vector
         std::vector< std::vector<cv::Point> > contours;
@@ -63,7 +101,7 @@ namespace mr
                 {
                     continue;
                 }
-                double area = cv::contourArea(contours[i]);
+                double area = cv::contourArea(contours.at(i));
                 if (area > largest_area)
                 {
                     largest_area = area;
@@ -77,7 +115,21 @@ namespace mr
         {
             std::vector<cv::Point> largest_contour = contours[largest_index];
             cv::Moments mu = cv::moments(contours[largest_index], true);
-            return cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+            cv::Point2f ball_centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+            if (!current)
+            {
+                *current = ball_centroid;
+            }
+            else if (!previous)
+            {
+                *previous = *current;
+            }
+            else
+            {
+                *previous = *current;
+                *current = ball_centroid;
+            }
+            return ball_centroid;
         }
 
         return boost::optional<cv::Point2f>{};  // no ball present, return negative result

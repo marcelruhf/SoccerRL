@@ -5,6 +5,7 @@ Serial serial;
 Logic logic;
 
 MyClient client;
+Client rClient;
 boolean pause = false;
 PVector vec = new PVector();
 boolean serialInited = false;
@@ -24,6 +25,8 @@ void setup() {
     // exitHandler();
 
     client = new MyClient();
+    rClient = new Client(this, "localhost", 2323);
+    client.setClient(rClient);
     logic = new Logic(client, serial);
 
     background(200, 0, 0);

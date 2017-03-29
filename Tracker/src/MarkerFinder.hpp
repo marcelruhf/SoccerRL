@@ -10,8 +10,6 @@
 #ifndef SOCCERRL_TRACKER_MARKERFINDER_HPP_
 #define SOCCERRL_TRACKER_MARKERFINDER_HPP_
 
-#define MARKER_ID 29
-
 #include <tuple>
 #include <vector>
 #include <opencv2/core/mat.hpp>
@@ -22,10 +20,14 @@ namespace mr
     class MarkerFinder
     {
     private:
-        cv::Mat image;
+        std::vector<int> ids;
+        std::vector< std::vector<cv::Point2f> > corners;
+        std::vector<cv::Vec3d> rvecs, tvecs;
     public:
-        void setImage(cv::Mat);
-        boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > > getPos();
+        void preprocess(const cv::Mat&);
+        void getCorners(const int&, boost::optional<std::vector<cv::Point2f>>&);
+        void getRotationVector(const int&, boost::optional<cv::Vec3d>&);
+        void getTranslationVector(const int&, boost::optional<cv::Vec3d>&);
     };
 }
 

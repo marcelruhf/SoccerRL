@@ -22,9 +22,14 @@ namespace mr
     private:
         cv::Mat image;
         MarkerFinder marker;
+        boost::optional<std::vector<cv::Point2f>> markerCorners;
+        boost::optional<cv::Vec3d> rvec;
+        boost::optional<cv::Vec3d> tvec;
     public:
         void setImage(cv::Mat);
-        boost::optional< std::tuple<cv::Point2f, cv::Vec3d, cv::Vec3d> > getPos();
+        boost::optional<cv::Point2f> getCentrePoint();
+        boost::optional<cv::Vec3d> getRotationVector();
+        boost::optional<cv::Vec3d> getTranslationVector();
     };
 }  // namespace mr
 

@@ -17,32 +17,48 @@
 
 namespace mr
 {
-    void MarkerFinder::setImage(cv::Mat img)
+    void MarkerFinder::preprocess(const cv::Mat& image)
     {
-        image = img;
-    }
-
-    boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > >
-    MarkerFinder::getPos()
-    {
-        std::vector<int> ids;
-        std::vector< std::vector<cv::Point2f> > corners;
         cv::Ptr<cv::aruco::Dictionary> dict = cv::aruco::getPredefinedDictionary(
                 cv::aruco::DICT_7X7_50
         );
         cv::aruco::detectMarkers(image, dict, corners, ids);
+        cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
+    }
 
-        if (ids.size() == 1 && ids.at(0) == MARKER_ID)
+    void MarkerFinder::getCorners(const int& markerId, boost::optional<std::vector<cv::Point2f>>& markerCorners)
+    {
+        for (int i = 0; i < ids.size(); ++i)
         {
-            // Then it has successfully detected our robot...
-            std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
-            return std::make_tuple(corners.at(0), rvecs, tvecs);
+            if (ids.at(i) == markerId)
+            {
+                *markerCorners = corners.at(i);
+                break;
+            }
         }
+    }
 
-        // Else, the corners vector contains rejected or no markers...
-        // ...so reject them
-        return boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>,
-                std::vector<cv::Vec3d> > >{};
+    void MarkerFinder::getRotationVector(const int& markerId, boost::optional<cv::Vec3d>& rvec)
+    {
+        for (int i = 0; i < ids.size(); ++i)
+        {
+            if (ids.at(i) == markerId)
+            {
+                *rvec = rvecs.at(i);
+                break;
+            }
+        }
+    }
+
+    void MarkerFinder::getTranslationVector(const int& markerId, boost::optional<cv::Vec3d>& tvec)
+    {
+        for (int i = 0; i < ids.size(); ++i)
+        {
+            if (ids.at(i) == markerId)
+            {
+                *tvec = tvecs.at(i);
+                break;
+            }
+        }
     }
 }

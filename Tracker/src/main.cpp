@@ -24,6 +24,7 @@
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include "BallTracker.hpp"
 #include "RobotTracker.hpp"
@@ -36,9 +37,8 @@ int main(int argc, char **argv)
     mr::RobotTracker robot;
     mr::BallTracker ball;
     cv::VideoCapture cap;
-    cap.set(cv::CAP_PROP_FPS, 25);  // Allows us to calculate velocity...
 
-    cap.open(0);  // try to start capturing from USB camera...
+    cap.open(1);  // try to start capturing from USB camera...
     if (!cap.isOpened())
     {
         // Display an error, quit the application...
@@ -49,24 +49,16 @@ int main(int argc, char **argv)
     cv::Mat frame;
     cv::namedWindow("Live", cv::WINDOW_GUI_NORMAL);
 
-    boost::asio::io_service io_service;
-    boost::asio::ip::tcp::socket socket(io_service);
-    boost::asio::ip::tcp::resolver resolver(io_service);
-    boost::asio::ip::tcp::resolver::iterator endpoint;
-
     try
     {
-        endpoint = resolver.resolve(boost::asio::ip::tcp::resolver::query("localhost", "2323"));
-        boost::system::error_code connect_error, write_error;
-        boost::asio::connect(socket, endpoint, connect_error);
+        boost::asio::io_service io_service;
+        boost::asio::ip::tcp::socket socket(io_service);
+        boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 2323));
+        boost::system::error_code write_error;
 
-        // Check if connection was established successfully, else quit
-        if (connect_error.value() != boost::system::errc::success)
-        {
-            std::cerr << "ERROR: Unable to connect!" << std::endl;
-            std::cerr << "Exiting now..." << std::endl;
-            return 1;
-        }
+        std::cout << "Waiting for a connection..." << std::endl;
+        acceptor.accept(socket);
+        std::cout << "Connection established." << std::endl;
 
         for (;;)
         {
@@ -81,60 +73,51 @@ int main(int argc, char **argv)
             robot.setImage(frame);  // set image to the current frame
             ball.setImage(frame);   // set image to the current frame
 
-            boost::optional< std::tuple< cv::Point2f, cv::Vec3d, cv::Vec3d > >
-                    rdata = robot.getPos();
+            std::string message;
 
-            cv::Point2f robot_centroid;
-            cv::Vec3d   rvec;
-            cv::Vec3d   tvec;
-            cv::Point2f ball_centroid;
-
-            // If rdata is NULL, no robot was found, so skip the loop...
-            if (rdata)
+            if (!robot.getCentrePoint() || !ball.getCentrePoint())
             {
-                robot_centroid      = static_cast<cv::Point2f>(std::get<0>(*rdata));
-                rvec                = static_cast<cv::Vec3d>(std::get<1>(*rdata));
-                tvec                = static_cast<cv::Vec3d>(std::get<2>(*rdata));
-
-                cv::aruco::drawAxis(frame, mr::CAMERA_MATRIX, mr::DISTORTION_COEFFICIENTS, rvec, tvec, 0.1);
+                double vars_array[2] = {-1, -1};
+                message = "STOP";
             }
             else
             {
-                std::cout << "No robot found" << std::endl;
-                continue;
-            }
-
-            boost::optional<cv::Point2f> bdata = ball.getPos();
-
-            // If ball_centre is NULL, no ball was found
-            if (bdata)
-            {
-                ball_centroid = static_cast<cv::Point2f>(*bdata);
-                std::cout << "Coordinates: (" << ball_centroid.x << "," << ball_centroid.y << ")" << std::endl;
-            }
-            else
-            {
-                std::cout << "No ball found" << std::endl;
-                continue;
-            }
-
-            if (rdata && bdata)
-            {
-                cv::arrowedLine(frame, robot_centroid, ball_centroid, cv::Scalar(0,0,0));
-                std::string message = mr::data_string(frame, robot_centroid, rvec, tvec, ball_centroid);
-                //std::cout << message << std::endl;
-                boost::asio::write(socket, boost::asio::buffer(message), write_error);
-
-                if (write_error.value() != boost::system::errc::success)
+                cv::arrowedLine(frame, robot_centroid, ball_centroid, cv::Scalar(0,0,255));
+                int vars_array[2];
+                mr::get_vars(vars_array, frame, robot, ball);
+                std::cout << "drbx: " << vars_array[0] << ", velocity: " << vars_array[1] << std::endl;
+                if (vars_array[1] == 0)
                 {
-                    std::cerr << "ERROR: Unable to send message!" << std::endl;
-                    std::cerr << "Exiting now..." << std::endl;
-                    break;
+                    message = "STOP";
+                }
+                else
+                {
+                    if (mr::signum(vars_array[0]) < 0)
+                    {
+                        message = "BACKWARD";
+                    }
+                    else if (mr::signum(vars_array[0] > 0))
+                    {
+                        message = "FORWARD";
+                    }
+                    else
+                    {
+                        message = "STOP";
+                    }
                 }
             }
 
+            boost::asio::write(socket, boost::asio::buffer(message), write_error);
+
+            if (write_error.value() != boost::system::errc::success)
+            {
+                std::cerr << "ERROR: Unable to send message!" << std::endl;
+                std::cerr << "Exiting now..." << std::endl;
+                break;
+            }
+
             cv::imshow("Live", frame);
-            if (cv::waitKey(0) == 'q' || cv::waitKey(0) == 27) break;
+            if (cv::waitKey(1) == 'q' || cv::waitKey(1) == 27) break;
         }
 
         boost::system::error_code close_error;

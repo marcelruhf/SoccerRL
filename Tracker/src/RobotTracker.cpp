@@ -21,30 +21,35 @@ namespace mr
 {
     void RobotTracker::setImage(cv::Mat img)
     {
-        image = img;
+        marker.preprocess(image);
+        // Determine marker vertices, rotation and translation vectors...
+
+        marker.getCorners(ROBOT_MARKER_ID, markerCorners);
+        marker.getRotationVector(ROBOT_MARKER_ID, rvec);
+        marker.getTranslationVector(ROBOT_MARKER_ID, tvec);
     }
 
-    boost::optional< std::tuple<cv::Point2f, cv::Vec3d, cv::Vec3d> > RobotTracker::getPos()
+    boost::optional<cv::Vec3d> RobotTracker::getRotationVector()
     {
-        marker.setImage(image);
+        return rvec;
+    }
 
-        // Determine marker vertices, rotation and translation vectors...
-        boost::optional< std::tuple< std::vector<cv::Point2f>, std::vector<cv::Vec3d>, std::vector<cv::Vec3d> > >
-                markerPos = marker.getPos();
+    boost::optional<cv::Vec3d> RobotTracker::getTranslationVector()
+    {
+        return tvec;
+    }
 
-        if (!markerPos)
+    boost::optional<cv::Point2f> RobotTracker::getCentrePoint()
+    {
+        if (!markerCorners)
         {
-            return boost::optional< std::tuple< cv::Point2f,
-                    cv::Vec3d, cv::Vec3d > >{};
+            return boost::optional<cv::Point2f>{};
         }
 
-        cv::Vec3d rvec = static_cast<cv::Vec3d>(std::get<1>(*markerPos).at(0));
-        cv::Vec3d tvec = static_cast<cv::Vec3d>(std::get<2>(*markerPos).at(0));
-
         // Compute Centroid of the robot...
-        cv::Moments mu = cv::moments(std::get<0>(*markerPos), true);
-        cv::Point2f robot_centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+        cv::Moments mu              = cv::moments(*markerCorners, true);
+        cv::Point2f robot_centroid  = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
 
-        return std::make_tuple(robot_centroid, rvec, tvec);
+        return robot_centroid;
     }
 }  // namespace mr

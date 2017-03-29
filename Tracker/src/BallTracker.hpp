@@ -20,9 +20,13 @@ namespace mr
     {
     private:
         cv::Mat src;  // Holds the image provided by the caller (either a static image or a video frame)
+        boost::optional<cv::Point2f> previous;  // Previous centre point of ball
+        boost::optional<cv::Point2f> current;  // Current centre point
     public:
         void setImage(cv::Mat);  // Replaces the stored image within the object (used by the caller)
-        boost::optional<cv::Point2f> getPos();  // Returns the position of the centre point of te ball and its velocity to the caller
+        std::vector< std::vector<cv::Point> > getPossibleContours();
+        boost::optional<cv::Point2f> getCentrePoint();  // Returns the position of the centre point of te ball
+        int getVelocity();  // Returns velocity of the ball
     };
 }
 

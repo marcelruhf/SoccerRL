@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Logic {
+    private final MyClient mClient;
     private final Protocol mProtocol;
     private final Vehicle mVehicle;
     private List<Device> devices;
@@ -42,7 +43,7 @@ class Logic {
          // distance_threshold = 400;
     }
 
-    void setSpeed(newSpeed) {
+    void setSpeed(float newSpeed) {
         speed = newSpeed;
     }
 
@@ -56,29 +57,28 @@ class Logic {
         */
 
         switch (mClient.getAction()) {
-<<<<<<< HEAD
-        case 'FORWARD':
+        case "FORWARD":
             mMotor_a.forward(speed);
             mMotor_b.forward(speed);
-        case 'LEFT':
+        case "LEFT":
             mMotor_a.backward(speed);
             mMotor_b.forward(speed);
             break;
-        case 'RIGHT':
+        case "RIGHT":
             mMotor_a.forward(speed);
             mMotor_b.backward(speed);
             break;
-        case 'BACKWARD':
+        case "BACKWARD":
             mMotor_a.backward(speed);
             mMotor_b.backward(speed);
             break;
-        case 'SPEEDUP':
+        case "SPEEDUP":
             speed += 0.1;
             break;
-        case 'SLOWDOWN':
+        case "SLOWDOWN":
             speed -= 0.1;
             break;
-        case 'STOP':
+        case "STOP":
             mVehicle.stop();
         default:
             mVehicle.stop();
