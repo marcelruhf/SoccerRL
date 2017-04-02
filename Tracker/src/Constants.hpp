@@ -29,10 +29,10 @@ namespace mr
     const double ONE_POUND_DIAMETER = 22.5;                                   // milimetres
     const double PIXELS_PER_MM      = ONE_POUND_PIXELS / ONE_POUND_DIAMETER;  // pixels
 
-    short ROBOT_MARKER_ID       = 29;
-    short GOAL_LEFT_MARKER_ID   = 30;
-    short GOAL_CENTRE_MARKER_ID = 31;
-    short GOAL_RIGHT_MARKER_ID  = 32;
+    const short ROBOT_MARKER_ID       = 29;
+    const short GOAL_LEFT_MARKER_ID   = 30;
+    const short GOAL_CENTRE_MARKER_ID = 31;
+    const short GOAL_RIGHT_MARKER_ID  = 32;
 }  // namespace mr
 
 #endif  // SOCCERRL_TRACKER_CONSTANTS_HPP_

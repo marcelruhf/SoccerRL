@@ -20,13 +20,12 @@ namespace mr
     class RobotTracker
     {
     private:
-        cv::Mat image;
         MarkerFinder marker;
         boost::optional<std::vector<cv::Point2f>> markerCorners;
         boost::optional<cv::Vec3d> rvec;
         boost::optional<cv::Vec3d> tvec;
     public:
-        void setImage(cv::Mat);
+        void preprocess(cv::Mat);
         boost::optional<cv::Point2f> getCentrePoint();
         boost::optional<cv::Vec3d> getRotationVector();
         boost::optional<cv::Vec3d> getTranslationVector();

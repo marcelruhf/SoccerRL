@@ -12,13 +12,16 @@
 
 #include <string>
 #include <opencv2/opencv.hpp>
+#include "RobotTracker.hpp"
+#include "BallTracker.hpp"
 
 namespace mr
 {
     template <typename T> int signum(T val);
     double distEuclidPixels(cv::Point2f p1, cv::Point2f p2);
     double distEuclidMM(cv::Point2f p1, cv::Point2f p2);
-    void get_vars(int vars_array[2], const cv::Mat& src, const RobotTracker& robot, const BallTracker& ball);
+    boost::optional<cv::Point2f> initialize_goal_centre(const cv::Mat& frame);
+    void get_vars(int vars_array[2], const cv::Mat& src, RobotTracker& robot, BallTracker& ball);
 }
 
 #endif  // SOCCERRL_TRACKER_FUNCTIONS_HPP_

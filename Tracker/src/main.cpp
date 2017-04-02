@@ -19,6 +19,8 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <chrono>
+#include <thread>
 #include <opencv2/opencv.hpp>  // include everything, for simplicity...
 #include <opencv2/aruco.hpp>
 #include <boost/asio.hpp>
@@ -28,8 +30,8 @@
 #include <boost/optional.hpp>
 #include "BallTracker.hpp"
 #include "RobotTracker.hpp"
-#include "Constants.hpp"
 #include "Functions.hpp"
+#include "Constants.hpp"
 
 int main(int argc, char **argv)
 {
@@ -43,11 +45,25 @@ int main(int argc, char **argv)
     {
         // Display an error, quit the application...
         std::cerr << "ERROR! Unable to open video stream!" << std::endl;
-        return -1;
+        return 1;
     }  // otherwise, continue...
 
     cv::Mat frame;
-    cv::namedWindow("Live", cv::WINDOW_GUI_NORMAL);
+    //cv::namedWindow("Live", cv::WINDOW_GUI_NORMAL);
+
+    cap.read(frame);
+    boost::optional<cv::Point2f> goalCentrePoint = mr::initialize_goal_centre(frame);
+
+    if (!goalCentrePoint)
+    {
+        std::cerr << "ERROR! Unable to initialize goal centre point!" << std::endl;
+        std::cerr << "Exiting now..." << std::endl;
+        return 1;
+    }  // Goal marker wasn't found, so exit...
+
+    std::cout << "Goal centre initialized, press any key to start server..." << std::endl;
+    std::cin.get();
+    bool robotInPosition = false;
 
     try
     {
@@ -60,6 +76,61 @@ int main(int argc, char **argv)
         acceptor.accept(socket);
         std::cout << "Connection established." << std::endl;
 
+        while (!robotInPosition)
+        {
+            cap.read(frame);
+
+            if (frame.empty())
+            {  // stop program execution, since camera disconnected...
+                std::cout << "No more frames..." << std::endl;
+                return 1;
+            }  // ... else, continue...
+
+            robot.preprocess(frame);
+
+            if (!robot.getCentrePoint())
+            {
+                std::cout << "Waiting for robot..." << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                continue;
+            }
+
+            std::string message;
+
+            int distance = static_cast<int>(std::fabs((std::floor(robot.getCentrePoint()->x) - std::floor(goalCentrePoint->x))/mr::PIXELS_PER_MM));
+
+            if (distance > 10 && (robotInPosition == false))
+            {
+                if (std::floor(robot.getCentrePoint()->x) < std::floor(goalCentrePoint->x))
+                {
+                    message = "w";
+                }
+                else if (std::floor(robot.getCentrePoint()->x) > std::floor(goalCentrePoint->x))
+                {
+                    message = "s";
+                }
+                else
+                {
+                    std::cerr << "ERROR! Something went wrong with the calculations!" << std::endl;
+                    std::cerr << "Exiting now..." << std::endl;
+                    return 1;
+                }
+            }
+            else
+            {
+                robotInPosition = true;
+                message = "z";
+            }
+
+            boost::asio::write(socket, boost::asio::buffer(message), write_error);
+            if (write_error.value() != boost::system::errc::success)
+            {
+                std::cerr << "ERROR: Unable to send message!" << std::endl;
+                std::cerr << "Exiting now..." << std::endl;
+                return 1;
+            }
+        }
+
         for (;;)
         {
             cap.read(frame);
@@ -67,56 +138,61 @@ int main(int argc, char **argv)
             if (frame.empty())
             {  // stop program execution, since camera disconnected...
                 std::cout << "No more frames..." << std::endl;
-                return 0;
+                return 1;
             }  // ... else, continue...
 
-            robot.setImage(frame);  // set image to the current frame
-            ball.setImage(frame);   // set image to the current frame
+            robot.preprocess(frame);
+
+            if (!robot.getCentrePoint())
+            {
+                std::cout << "Waiting for robot..." << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                continue;
+            }
+
+            ball.setImage(frame);
+
+            boost::optional<cv::Point2f> ball_centroid = ball.getCentrePoint();
+            boost::optional<cv::Point2f> robot_centroid = robot.getCentrePoint();
 
             std::string message;
 
-            if (!robot.getCentrePoint() || !ball.getCentrePoint())
+            if (!robot_centroid || !ball_centroid)
             {
-                double vars_array[2] = {-1, -1};
-                message = "STOP";
+                int vars_array[2] = {0};
+                message = "z";
+                if (!robot.getCentrePoint()) std::cout << "Robot not found! ";
+                if (!ball.getCentrePoint()) std::cout << "Ball not found!";
+                std::cout << std::endl;
             }
-            else
-            {
-                cv::arrowedLine(frame, robot_centroid, ball_centroid, cv::Scalar(0,0,255));
-                int vars_array[2];
+            else {
+                int vars_array[2] = {0};
                 mr::get_vars(vars_array, frame, robot, ball);
                 std::cout << "drbx: " << vars_array[0] << ", velocity: " << vars_array[1] << std::endl;
-                if (vars_array[1] == 0)
-                {
-                    message = "STOP";
-                }
-                else
-                {
-                    if (mr::signum(vars_array[0]) < 0)
-                    {
-                        message = "BACKWARD";
-                    }
-                    else if (mr::signum(vars_array[0] > 0))
-                    {
-                        message = "FORWARD";
-                    }
-                    else
-                    {
-                        message = "STOP";
+                robotInPosition = true;
+                std::cout << "Robot now in position!" << std::endl;
+                if (vars_array[1] == 0) {
+                    message = "z";
+                } else {
+                    if (vars_array[0] < 0) {
+                        message = "s\n";
+                    } else if (vars_array[0] > 0) {
+                        message = "w";
+                    } else {
+                        message = "z";
                     }
                 }
             }
-
             boost::asio::write(socket, boost::asio::buffer(message), write_error);
 
             if (write_error.value() != boost::system::errc::success)
             {
                 std::cerr << "ERROR: Unable to send message!" << std::endl;
                 std::cerr << "Exiting now..." << std::endl;
-                break;
+                return 1;
             }
 
-            cv::imshow("Live", frame);
+            //cv::imshow("Live", frame);
             if (cv::waitKey(1) == 'q' || cv::waitKey(1) == 27) break;
         }
 

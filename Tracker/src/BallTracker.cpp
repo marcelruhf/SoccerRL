@@ -35,7 +35,7 @@ namespace mr
             return 0;
         }
         double distTravelled = distEuclidMM(*previous, *current);
-        return static_cast<int>(std::roud(distTravelled));
+        return static_cast<int>(std::round(distTravelled));
     }
 
     std::vector< std::vector<cv::Point> > BallTracker::getPossibleContours()
@@ -118,16 +118,16 @@ namespace mr
             cv::Point2f ball_centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
             if (!current)
             {
-                *current = ball_centroid;
+                current = ball_centroid;
             }
             else if (!previous)
             {
-                *previous = *current;
+                previous = current;
             }
             else
             {
-                *previous = *current;
-                *current = ball_centroid;
+                previous = current;
+                current = ball_centroid;
             }
             return ball_centroid;
         }

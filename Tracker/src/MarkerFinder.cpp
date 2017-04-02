@@ -26,39 +26,39 @@ namespace mr
         cv::aruco::estimatePoseSingleMarkers(corners, 0.05, CAMERA_MATRIX, DISTORTION_COEFFICIENTS, rvecs, tvecs);
     }
 
-    void MarkerFinder::getCorners(const int& markerId, boost::optional<std::vector<cv::Point2f>>& markerCorners)
+    boost::optional<std::vector<cv::Point2f>> MarkerFinder::getCorners(const int& markerId)
     {
         for (int i = 0; i < ids.size(); ++i)
         {
             if (ids.at(i) == markerId)
             {
-                *markerCorners = corners.at(i);
-                break;
+                return corners.at(i);
             }
         }
+        return boost::optional<std::vector<cv::Point2f>>{};
     }
 
-    void MarkerFinder::getRotationVector(const int& markerId, boost::optional<cv::Vec3d>& rvec)
+    boost::optional<cv::Vec3d> MarkerFinder::getRotationVector(const int& markerId)
     {
         for (int i = 0; i < ids.size(); ++i)
         {
             if (ids.at(i) == markerId)
             {
-                *rvec = rvecs.at(i);
-                break;
+                return rvecs.at(i);
             }
         }
+        return boost::optional<cv::Vec3d>{};
     }
 
-    void MarkerFinder::getTranslationVector(const int& markerId, boost::optional<cv::Vec3d>& tvec)
+    boost::optional<cv::Vec3d> MarkerFinder::getTranslationVector(const int& markerId)
     {
         for (int i = 0; i < ids.size(); ++i)
         {
             if (ids.at(i) == markerId)
             {
-                *tvec = tvecs.at(i);
-                break;
+                return tvecs.at(i);
             }
         }
+        return boost::optional<cv::Vec3d>{};
     }
 }

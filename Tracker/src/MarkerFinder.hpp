@@ -25,9 +25,9 @@ namespace mr
         std::vector<cv::Vec3d> rvecs, tvecs;
     public:
         void preprocess(const cv::Mat&);
-        void getCorners(const int&, boost::optional<std::vector<cv::Point2f>>&);
-        void getRotationVector(const int&, boost::optional<cv::Vec3d>&);
-        void getTranslationVector(const int&, boost::optional<cv::Vec3d>&);
+        boost::optional<std::vector<cv::Point2f>> getCorners(const int&);
+        boost::optional<cv::Vec3d> getRotationVector(const int&);
+        boost::optional<cv::Vec3d> getTranslationVector(const int&);
     };
 }
 

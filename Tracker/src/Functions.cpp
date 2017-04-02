@@ -13,6 +13,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/optional.hpp>
 #include <opencv2/opencv.hpp>
+#include "MarkerFinder.hpp"
 #include "RobotTracker.hpp"
 #include "BallTracker.hpp"
 #include "Constants.hpp"
@@ -20,7 +21,8 @@
 
 namespace mr
 {
-    template <typename T> int signum(T val) {
+    template <typename T>
+    int signum(T val) {
         return (T(0) < val) - (val < T(0));
     }
 
@@ -35,7 +37,20 @@ namespace mr
         return (distPx / PIXELS_PER_MM);
     }
 
-    void get_vars(int vars_array[2], const cv::Mat& src, const RobotTracker& robot, const BallTracker& ball)
+    boost::optional<cv::Point2f> initialize_goal_centre(const cv::Mat& frame)
+    {
+        MarkerFinder marker;
+        marker.preprocess(frame);
+        boost::optional<std::vector<cv::Point2f>> goalCentreCorners = marker.getCorners(GOAL_CENTRE_MARKER_ID);
+        if (goalCentreCorners)
+        {
+            cv::Moments mu = cv::moments(*goalCentreCorners, true);
+            return cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+        }
+        return boost::optional<cv::Point2f>{};
+    }
+
+    void get_vars(int vars_array[2], const cv::Mat& src, RobotTracker& robot, BallTracker& ball)
     {
         //double len1 = std::hypot(robot_centroid.x, robot_centroid.y);
         //double len2 = std::hypot(ball_centroid.x, ball_centroid.y);
@@ -45,11 +60,13 @@ namespace mr
         //root.add("arb", arb);
 
         // Determine distance between robot and ball in terms of the X axis
+        robot.preprocess(src);
+        ball.setImage(src);
         boost::optional<cv::Point2f> ball_centroid = ball.getCentrePoint();
         boost::optional<cv::Point2f> robot_centroid = robot.getCentrePoint();
         if (!ball_centroid || !robot_centroid)
         {
-            vars_array = {0, 0};
+            vars_array = {0};
         }
         else
         {

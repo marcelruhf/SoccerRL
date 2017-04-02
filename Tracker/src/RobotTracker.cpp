@@ -19,14 +19,14 @@
 
 namespace mr
 {
-    void RobotTracker::setImage(cv::Mat img)
+    void RobotTracker::preprocess(cv::Mat image)
     {
         marker.preprocess(image);
-        // Determine marker vertices, rotation and translation vectors...
 
-        marker.getCorners(ROBOT_MARKER_ID, markerCorners);
-        marker.getRotationVector(ROBOT_MARKER_ID, rvec);
-        marker.getTranslationVector(ROBOT_MARKER_ID, tvec);
+        // Determine marker vertices, rotation and translation vectors...
+        markerCorners = marker.getCorners(ROBOT_MARKER_ID);
+        rvec = marker.getRotationVector(ROBOT_MARKER_ID);
+        tvec = marker.getTranslationVector(ROBOT_MARKER_ID);
     }
 
     boost::optional<cv::Vec3d> RobotTracker::getRotationVector()
