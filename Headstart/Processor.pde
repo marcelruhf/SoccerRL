@@ -54,4 +54,3 @@ class Processor implements Observer {
         return null;
     }
 }
-

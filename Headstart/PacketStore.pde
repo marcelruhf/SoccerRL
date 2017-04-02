@@ -26,4 +26,3 @@ class PacketStore extends Observable {
         notifyObservers();
     }
 }
-

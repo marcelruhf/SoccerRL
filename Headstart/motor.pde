@@ -77,4 +77,3 @@ class Motor extends Observable implements Protocable {
         notifyObservers();
     }
 }
-

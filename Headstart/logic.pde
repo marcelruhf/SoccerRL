@@ -1,96 +1,96 @@
 import java.util.ArrayList;
 import java.util.List;
+import processing.net.*;
 
 class Logic {
-    private final MyClient mClient;
+  
+    int counter = 0;
+ 
     private final Protocol mProtocol;
     private final Vehicle mVehicle;
     private List<Device> devices;
     private final Motor mMotor_a;
     private final Motor mMotor_b;
-    // private final Proximity mProximity;
+    private final Keyboard mKeyboard;
     private float speed;
-    // private final int distance_threshold;
-
-    Logic( final MyClient client, final Serial serial) {
-        mClient = client;
-        final PacketStore packetStore = new PacketStore(100);
+ 
+    Logic( final Keyboard keyboard, final Serial serial) {
+      
+        mKeyboard = keyboard;
+        final PacketStore packetStore = new PacketStore(100); 
         mProtocol = new Protocol(serial, packetStore);
 
         devices = new ArrayList<Device>();
 
-        // create devices
+        /* create devices */
         mMotor_a = new Motor();
         mMotor_b = new Motor();
-        // mProximity = new Proximity();
-
+      
         /* add devices to list */
         devices.add(new Device(Device.MOTOR, 0, (Protocable) mMotor_a));
         devices.add(new Device(Device.MOTOR, 1, (Protocable) mMotor_b));
-        // devices.add(new Device(Device.PROXIMITY, 0, (Protocable) mProximity));
-
-        // create processor for processing packets
+  
+        /* create processor for processing packets */
         final Processor processor = new Processor(devices, packetStore);
 
-        // create vehicle, consisting from two motors
+        /* create vehicle, consisting from two motors */
         mVehicle = new Vehicle(mMotor_a, mMotor_b);
-
-        speed = 255;
-
-        /* higher value, closer to obstacle
-         * if too close, it is inverted
-         */
-         // distance_threshold = 400;
+        
+        speed = 20;
     }
-
-    void setSpeed(float newSpeed) {
-        speed = newSpeed;
-    }
+      
 
     /* main loop for keyboard */
     /* TODO two keys pressed at once do not work */
-    void client() {
-        /*
-        mClient.getAction() - return action
-        mSkeleton.getRightHand() - return vec(x, y, z)
-        mVehicle.stop() - stop vehicle
-        */
-
-        switch (mClient.getAction()) {
-        case "FORWARD":
+    void keyboard(char takeAction) {
+        /* mKeyboard.getKey() - return pressed key */
+        /* mSkeleton.getRightHand() - return vec(x, y, z) */
+        /* mVehicle.stop() - stop vehicle */
+        
+        switch (takeAction) {
+        case 'w':
             mMotor_a.forward(speed);
             mMotor_b.forward(speed);
-        case "LEFT":
+            break;
+        case 'a':
             mMotor_a.backward(speed);
             mMotor_b.forward(speed);
             break;
-        case "RIGHT":
+        case 'd':
             mMotor_a.forward(speed);
             mMotor_b.backward(speed);
             break;
-        case "BACKWARD":
+        case 's':
+            speed = 50;
             mMotor_a.backward(speed);
             mMotor_b.backward(speed);
             break;
-        case "SPEEDUP":
+        case 'r':
             speed += 0.1;
             break;
-        case "SLOWDOWN":
+        case 'f':
             speed -= 0.1;
             break;
-        case "STOP":
+        case 'z':
             mVehicle.stop();
+        case 'x':
+            mVehicle.setSpeed(0);
         default:
             mVehicle.stop();
         }
+        
+        postExecute();
     }
+    
+  
 
     void stop() {
         mVehicle.stop();
         postExecute();
     }
 
-    private void preExecute() {}
+    private void preExecute() {
+    }
 
     private void postExecute() {
         /* send devices states to buggy */
@@ -99,9 +99,11 @@ class Logic {
                 mProtocol.send(devices.get(i));
                 devices.get(i).clear();
             }
+            
         }
 
-        // 8 ms per frame
+        /* 8 ms per frame */
         delay(8);
+
     }
 }
