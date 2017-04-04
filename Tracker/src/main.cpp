@@ -119,6 +119,7 @@ int main(int argc, char **argv)
             else
             {
                 robotInPosition = true;
+                std::cout << "Robot now in position..." << std::endl;
                 message = "z";
             }
 
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
             }  // ... else, continue...
 
             std::string message;
-            int vars_array[2] = {0};
+            int vars_array[4] = {0};
 
             mr::get_vars(vars_array, frame, robot, ball);
 

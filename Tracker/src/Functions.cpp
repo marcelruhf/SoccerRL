@@ -50,7 +50,7 @@ namespace mr
         return boost::optional<cv::Point2f>{};
     }
 
-    void get_vars(int vars_array[2], const cv::Mat& src, RobotTracker& robot, BallTracker& ball)
+    void get_vars(int vars_array[4], const cv::Mat& src, RobotTracker& robot, BallTracker& ball)
     {
         //double len1 = std::hypot(robot_centroid.x, robot_centroid.y);
         //double len2 = std::hypot(ball_centroid.x, ball_centroid.y);
@@ -62,17 +62,20 @@ namespace mr
         // Determine distance between robot and ball in terms of the X axis
         robot.preprocess(src);
         ball.setImage(src);
-        boost::optional<cv::Point2f> ball_centroid = ball.getCentrePoint();
         boost::optional<cv::Point2f> robot_centroid = robot.getCentrePoint();
+        boost::optional<cv::Point2f> ball_centroid = ball.getCentrePoint();
+        int ball_velocity = ball.getVelocity();
         if (!ball_centroid || !robot_centroid)
         {
             vars_array = {0};
         }
         else
         {
-            double drbx = ((*ball_centroid).x - (*robot_centroid).x) / PIXELS_PER_MM;
-            vars_array[0] = std::round(drbx);
-            vars_array[1] = ball.getVelocity();
+            double drbx     = (ball_centroid->x - robot_centroid->x) / PIXELS_PER_MM;
+            vars_array[0]   = static_cast<int>(std::round(drbx));
+            vars_array[1]   = static_cast<int>(std::round(ball_velocity));
+            vars_array[2]   = static_cast<int>(std::round(ball_centroid->x));
+            vars_array[3]   = static_cast<int>(std::round(ball_centroid->y));
         }
     }
 }
