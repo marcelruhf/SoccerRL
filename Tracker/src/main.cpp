@@ -141,48 +141,23 @@ int main(int argc, char **argv)
                 return 1;
             }  // ... else, continue...
 
-            robot.preprocess(frame);
-
-            if (!robot.getCentrePoint())
-            {
-                std::cout << "Waiting for robot..." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-                continue;
-            }
-
-            ball.setImage(frame);
-
-            boost::optional<cv::Point2f> ball_centroid = ball.getCentrePoint();
-            boost::optional<cv::Point2f> robot_centroid = robot.getCentrePoint();
-
             std::string message;
+            int vars_array[2] = {0};
 
-            if (!robot_centroid || !ball_centroid)
-            {
-                int vars_array[2] = {0};
+            mr::get_vars(vars_array, frame, robot, ball);
+
+            if (vars_array[1] == 0) {
                 message = "z";
-                if (!robot.getCentrePoint()) std::cout << "Robot not found! ";
-                if (!ball.getCentrePoint()) std::cout << "Ball not found!";
-                std::cout << std::endl;
-            }
-            else {
-                int vars_array[2] = {0};
-                mr::get_vars(vars_array, frame, robot, ball);
-                std::cout << "drbx: " << vars_array[0] << ", velocity: " << vars_array[1] << std::endl;
-                robotInPosition = true;
-                std::cout << "Robot now in position!" << std::endl;
-                if (vars_array[1] == 0) {
-                    message = "z";
+            } else {
+                if (vars_array[0] < 0) {
+                    message = "s";
+                } else if (vars_array[0] > 0) {
+                    message = "w";
                 } else {
-                    if (vars_array[0] < 0) {
-                        message = "s\n";
-                    } else if (vars_array[0] > 0) {
-                        message = "w";
-                    } else {
-                        message = "z";
-                    }
+                    message = "z";
                 }
             }
+
             boost::asio::write(socket, boost::asio::buffer(message), write_error);
 
             if (write_error.value() != boost::system::errc::success)
