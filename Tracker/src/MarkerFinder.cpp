@@ -12,8 +12,8 @@
 #include <boost/optional.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include "MarkerFinder.hpp"
-#include "Constants.hpp"
+#include <MarkerFinder.hpp>
+#include <Constants.hpp>
 
 namespace mr
 {

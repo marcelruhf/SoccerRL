@@ -17,9 +17,9 @@
 #include <boost/optional.hpp>
 #include <cmath>
 #include <opencv2/opencv.hpp>
-#include "Constants.hpp"
-#include "Functions.hpp"
-#include "BallTracker.hpp"
+#include <Constants.hpp>
+#include <Functions.hpp>
+#include <BallTracker.hpp>
 
 namespace mr
 {
