@@ -30,6 +30,8 @@ This application was tested on the following Operating System(s):
 * RobotTracker: implements robot tracking mechanism using ArUco AR markers
 * MarkerFinder: actually finds the AR markers within the image
 * BallTracker: tracks the position of the ball in the image by thresholding the image based on lower and upper HSV colour space limits.
+* ActionValueFunction: implementation of True Online Sarsa(lambda)
+* Simulator: A simulation of the ball and robot movement for RL
 
 ## Code Contributors
 
@@ -39,6 +41,7 @@ This application was tested on the following Operating System(s):
 
 * Sam Wilson (S.S.Wilson@leeds.ac.uk)
 * Andy Bulpitt (A.J.Bulpitt@leeds.ac.uk)
+* Matteo Leonetti (M.Leonetti@leeds.ac.uk)
 
 ## Installing Prerequisites
 
@@ -54,9 +57,9 @@ brew install boost
 To run this project, you will need to compile it first.
 
 ```shell
-cd /path/to/SoccerRL
+cd /path/to/SoccerRL/{SimulatedRL or Tracker}
 cmake .
 make
 ```
 
-This creates an executable called ```SoccerRL``` in ```/path/to/SoccerRL/Tracker/bin```.
+This creates an executable called ```SoccerRL``` in ```/path/to/SoccerRL/Tracker/bin```, or for the Simulator in ```/path/to/SoccerRL/SimulatedRL/bin/SimulatedRL```.
