@@ -10,19 +10,22 @@
 #ifndef SOCCERRL_SIMULATEDRL_SIMULATOR_HPP_
 #define SOCCERRL_SIMULATEDRL_SIMULATOR_HPP_
 
+#include <boost/random/mersenne_twister.hpp>
+
 namespace mr
 {
     class Simulator
     {
     private:
-        int distX;
-        int distY;
-        int velocity;
+        float distX;
+        float distY;
+        float velocity;
+        boost::random::mt19937 gen;
     public:
         Simulator();
-        int getDistX();
-        int getDistY();
-        int getVelocity();
+        float getDistX();
+        float getDistY();
+        float getVelocity();
         void move(int);
         void nextEpisode();
     };

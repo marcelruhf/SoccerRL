@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cassert>
 #include <vector>
 #include <string>
 #include <valarray>
@@ -21,35 +22,92 @@
 #include <Simulator.hpp>
 #include <Functions.hpp>
 #include <Constants.hpp>
+#include <Globals.hpp>
 #include <SarsaParams.hpp>
 #include <TrueOnlineSarsaUpdate.hpp>
 #include <ActionValueFunction.hpp>
+#include <Tiles.hpp>
+
+namespace mr
+{
+    double EPSILON = 0.2;
+}
+
+std::valarray<float> features(float distance, float velocity) {
+    const int num_tiles = 64;
+    const int tilings1 = 64;
+
+    const int mem_size = 4096;
+
+    std::valarray<int> tiles_array(num_tiles);
+
+    const int num_of_variables = 2;
+    float scaled[num_of_variables];
+    scaled[0] = distance / 4.f;
+    scaled[1] = velocity / 4.f;
+
+    tiles(&tiles_array[0],tilings1,mem_size,scaled,num_of_variables);
+
+    std::valarray<float> feat(mem_size);
+
+    for (int i=0, size = tiles_array.size(); i<size; ++i) {
+        feat[tiles_array[i]] = 1;
+    }
+
+    /*
+    std::cout << "Tiles array size: " << tiles_array.size() << std::endl;
+
+    std::cout << "Tiles index: ";
+    for (int i = 0; i < tiles_array.size(); ++i)
+    {
+        std::cout << tiles_array[i] << " ";
+    }
+    std::cout << std::endl;
+     */
+
+    return feat;
+}
 
 int main(int argc, char **argv)
 {
+    mr::Simulator simulator;
+    mr::SarsaParams params;
+    params.alpha = 0.3/4096;
+    params.gamma = 0.9;
+    params.lambda = 0.99;
+    mr::ActionValueFunction<int> vf(params);
+
+    //---------------------
+    //initialization of the tiling code
+
+    int dummy_tiles[1];
+    float dummy_vars[1];
+
+    srand(0);
+    tiles(dummy_tiles,1,1,dummy_vars,0); // initialize the tiling hashing
+    // consistently before srand is set
+
+    //---------------------
+
+    //initializing the seed of the random number generator
+    srand((unsigned) time(NULL) * getpid());
+
     try
     {
-        mr::Simulator simulator;
-        mr::SarsaParams params;
-        params.alpha = 0.2;
-        params.gamma = 1;
-        params.lambda = 0.99;
-        mr::ActionValueFunction<int> vf(params);
         std::ofstream datafile;
 
-        boost::mt19937 gen;
+        boost::mt19937 gen((unsigned) time(NULL) * getpid());
         boost::random::uniform_real_distribution<double> rDist(0, 1);
-        boost::random::uniform_int_distribution<> iDist(-1, 1);
+        boost::random::uniform_int_distribution<> iDist(-20, 20);
 
-        datafile.open("/users/marcelruhf/Documents/data2.csv");
+        datafile.open("/users/marcelruhf/Documents/new4_data11.csv");
 
-        datafile << "Episode,Accumulate Reward" << std::endl;
+        datafile << "Episode,Accumulative Reward" << std::endl;
 
         for (int i = 0; i < mr::NUM_EPISODES; ++i)
         {
-            std::valarray<float> s, sPrime;
             boost::optional<int> a, aPrime;
-            int r;
+            double r;
 
             //std::cout << "================================" << std::endl;
             //std::cout << "Episode " << i+1 << " started..." << std::endl;
@@ -57,30 +115,31 @@ int main(int argc, char **argv)
             //std::cin.get();
             //std::cout << "================================" << std::endl;
 
-            auto start = std::chrono::high_resolution_clock::now();
+            //auto start = std::chrono::high_resolution_clock::now();
 
             long accumulative_reward = 0;
 
             for (;;)
             {
-                auto rightnow = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<float> duration = rightnow - start;
+                //auto rightnow = std::chrono::high_resolution_clock::now();
+                //std::chrono::duration<float> duration = rightnow - start;
 
-                if (simulator.getDistX() == 0)
+                if (simulator.getDistX() == 0 && simulator.getDistX() == 0)
                 {  // The robot blocked the ball...
-                    std::cout << "Goal state reached, end of episode." << std::endl;
+                    //std::cout << "Goal state reached, end of episode." << std::endl;
                     break;
                 }
                 else if (simulator.getDistY() == 0)
                 {  // The ball reached the goal and the robot didn't catch it...
-                    std::cout << "No, they scored!" << std::endl;
+                    //std::cout << "No, they scored!" << std::endl;
                     break;
                 }
 
                 // Set S In SARS'A'
-                s = {static_cast<float>(simulator.getDistX()), static_cast<float>(simulator.getVelocity())};
+                float distX = simulator.getDistX();
+                float velocity = simulator.getVelocity();
+                std::valarray<float> s = features(distX, velocity);
 
-                std::cout << "Getting *a: " << std::endl;
                 // START: Set A in SARS'A'
                 if (!aPrime)
                 {
@@ -98,7 +157,7 @@ int main(int argc, char **argv)
                         {
                             a = iDist(gen);
                         }
-                        std::cout << "Taking non-random action: " << *a << std::endl;
+                        //std::cout << "Taking non-random action: " << *a << std::endl;
                     }
                 }
                 else
@@ -107,15 +166,14 @@ int main(int argc, char **argv)
                 }
                 // END: Set A in SARS'A'
 
-                std::cout << "Current distance: " << simulator.getDistX() << ", " << "ball velocity: " << simulator.getVelocity() << ", move " << *a << "... ";
+                //std::cout << "Current distance: " << simulator.getDistX() << ", " << "ball velocity: " << simulator.getVelocity() << ", move " << *a << "... ";
                 simulator.move(*a);  // Executes A in SARS'A'
-                std::cout << "new distance: " << simulator.getDistX() << std::endl;
-
-                r = -std::abs(simulator.getDistX());  // Get reward
-                accumulative_reward += r;  // Add reward to episode total
+                //std::cout << "new distance: " << simulator.getDistX() << std::endl;
 
                 // Set S' in SARS'A'
-                sPrime = {static_cast<float>(simulator.getDistX()), static_cast<float>(simulator.getVelocity())};
+                float distXPrime = simulator.getDistX();
+                float velocityPrime = simulator.getVelocity();
+                std::valarray<float> sPrime = features(distXPrime, velocityPrime);
 
                 // START: Set A' in SARS'A'
                 if (rDist(gen) < mr::EPSILON)
@@ -137,72 +195,25 @@ int main(int argc, char **argv)
                 }
                 // END: Set A' in SARS'A'
 
-                std::cout << "Updating value function... ";
-                std::cout << "S(" << std::to_string(s[0]) << ") A(" << *a << ") R(" << r << ") S'(" << std::to_string(sPrime[0]) << ") A'(" << *aPrime << ")" << std::endl;
+                // Set R in SARS'A'
+                r = -std::abs(simulator.getDistX());
+                accumulative_reward += r;  // Add reward to episode total
+
                 vf.update(s, *a, r, sPrime, *aPrime);  // updates action value function, end of iteration...
-                std::cout << "done." << std::endl;
+            }
 
-                /*
-                if (timestep == 0)
-                {
-                    simulator.setNextState();
-                    timestep = 1;
-                }
-                else
-                {
-                    //if (mr::EPSILON > 0.f) mr::EPSILON -= 0.1f;
-                    simulator.setActionReward();
-                    simulator.setNextState();
-                }
-
-                if (simulator.getDistX() == 0 && simulator.getDistY() == 0)
-                {
-                    std::cout << "Goal state reached, end of episode." << std::endl;
-                    simulator.setActionReward(100);
-                    double accumulate_reward = simulator.getAccumulativeReward();
-                    datafile << i+1 << "," << accumulate_reward << std::endl;
-                    std::cout << "Episode " << i+1 << " complete" << std::endl;
-                    std::cout << "Accumulative reward: " << simulator.getAccumulativeReward() << std::endl;
-                    simulator.nextEpisode();
-                    //break;
-                    inEpisode = false;
-                }
-                else if (duration.count() > 9 || simulator.getDistY() == 0)
-                {
-                    std::cout << "Time's up!" << std::endl;
-                    simulator.setActionReward(-100);
-                    double accumulate_reward = simulator.getAccumulativeReward();
-                    datafile << i+1 << "," << accumulate_reward << std::endl;
-                    std::cout << "Episode " << i+1 << " complete" << std::endl;
-                    std::cout << "Accumulative reward: " << simulator.getAccumulativeReward() << std::endl;
-                    simulator.nextEpisode();
-                    inEpisode = false;
-                }
-
-                if (inEpisode)
-                {
-                    int action = simulator.getNextAction();
-                    std::cout << simulator.getDistX() << ", " << "ball velocity: " << simulator.getVelocity() << ", move " << action << "... ";
-                    simulator.move(action);
-                    std::cout << "new distance: " << simulator.getDistX() << std::endl;
-                }
-                else
-                {
-                    simulator.move(0);
-                }
-
-                if (timestep != 0)
-                {
-                    std::cout << "Updating value function... ";
-                    simulator.updateVf();
-                    std::cout << "done." << std::endl;
-                }
-                */
+            if (i < 500)
+            {
+                mr::EPSILON -= (mr::EPSILON/1500);
+            }
+            else
+            {
+                mr::EPSILON = 0;
             }
 
             datafile << i+1 << "," << accumulative_reward << std::endl;
-            std::cout << "Episode " << i+1 << " complete" << std::endl;
-            std::cout << "Accumulative reward: " << accumulative_reward << std::endl;
+            //std::cout << "Episode " << i+1 << " complete" << std::endl;
+            //std::cout << "Accumulative reward: " << accumulative_reward << std::endl;
             simulator.nextEpisode();
             vf.clearE();
         }

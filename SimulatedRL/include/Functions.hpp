@@ -15,8 +15,7 @@
 
 namespace mr
 {
-    template <typename T> bool isnan(T x) { return (T(x) != T(x)); }
-    std::valarray<float> features(double distance, double velocity);
+
 }
 
 #endif  // SOCCERRL_TRACKER_FUNCTIONS_HPP_

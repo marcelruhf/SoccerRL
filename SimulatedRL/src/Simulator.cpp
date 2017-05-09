@@ -9,6 +9,9 @@
 
 #include <iostream>
 #include <string>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 #include <Simulator.hpp>
 #include <Functions.hpp>
 
@@ -16,25 +19,25 @@ namespace mr
 {
     Simulator::Simulator()
     {
-        //boost::random::uniform_int_distribution<> dist(-20, 20);
-        distX = 20;
-        //boost::random::uniform_int_distribution<> yDist(5, 20);
-        distY = 1000;
-        velocity = 0;
-        //while (velocity == 0) velocity = dist(gen);
+        boost::random::uniform_int_distribution<> dist(-20, 20);
+        distX = dist(gen);
+        while (distX == 0) distX = dist(gen);
+        distY = 50;
+        velocity = dist(gen);
+        while (velocity == 0) velocity = dist(gen);
     }
 
-    int Simulator::getDistX()
+    float Simulator::getDistX()
     {
         return distX;
     }
 
-    int Simulator::getDistY()
+    float Simulator::getDistY()
     {
         return distY;
     }
 
-    int Simulator::getVelocity()
+    float Simulator::getVelocity()
     {
         return velocity;
     }
@@ -50,13 +53,12 @@ namespace mr
 
     void Simulator::nextEpisode()
     {
-        //boost::random::uniform_int_distribution<> dist(-20, 20);
-        distX = 20;
-        //while (distX == 0) distX = dist(gen);
-        //boost::random::uniform_int_distribution<> yDist(5, 20);
-        distY = 1000;
-        velocity = 0;
-        //while (velocity == 0) velocity = dist(gen);
+        boost::random::uniform_int_distribution<> dist(-20, 20);
+        distX = dist(gen);
+        while (distX == 0) distX = dist(gen);
+        distY = 50;
+        velocity = dist(gen);
+        while (velocity == 0) velocity = dist(gen);
     }
 
 }

@@ -36,9 +36,6 @@ namespace mr
     const short GOAL_CENTRE_MARKER_ID = 31;
     const short GOAL_RIGHT_MARKER_ID  = 32;
 
-    const double EPSILON = 0.2;
-    const SarsaParams SARSA_PARAMS = SarsaParams(0.4, 1, 0.99);
-
     const int NUM_EPISODES = 2000;
 }  // namespace mr
 

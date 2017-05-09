@@ -81,6 +81,10 @@ namespace mr
 
     };
 
+    bool isnan(const double &x)
+    {
+        return (x != x);
+    }
 
     template<typename A,typename AC,typename AE>
     double ActionValueFunction<A,AC,AE>::valueOf ( const std::valarray< float > &s,
@@ -96,7 +100,11 @@ namespace mr
             throw std::runtime_error ( "ActionValueFunction::valueOf: s and theta had different sizes" );
         }
 
-        return ( theta_i->second * s ).sum(); //dot product
+        double q = ( theta_i->second * s ).sum(); //dot product
+
+        assert(!isnan(q));
+
+        return q;
     }
 
     template<typename A,typename AC,typename AE>
@@ -111,7 +119,7 @@ namespace mr
         return result;
     }
 
-    template <typename A, typename AC, typename AE>
+    template<typename A, typename AC, typename AE>
     bool ActionValueFunction<A,AC,AE>::allEqual ( const std::valarray<float> &s ) const
     {
         std::vector< std::pair<A, double> > actionValues = valueOf ( s );
@@ -138,11 +146,12 @@ namespace mr
     A ActionValueFunction<A,AC,AE>::bestAction ( const std::valarray<float> &s ) const
     {
         std::vector< std::pair<A, double> > actionValues = valueOf ( s );
-        if (actionValues.size() == 0) throw new std::runtime_error("ERROR! Empty vector, should have been cought by allEqual.");
+        assert(actionValues.size()>0);
         A bestAction = std::get<0>(actionValues.at(0));
         double bestActionValue = std::get<1>(actionValues.at(0));
         for (int i = 0; i < actionValues.size(); ++i)
         {
+            if (isnan(std::get<1>(actionValues.at(i)))) throw new std::runtime_error("NaN action value, something is wrong!");
             if (std::get<1>(actionValues.at(i)) > bestActionValue)
             {
                 bestAction = std::get<0>(actionValues.at(i));
@@ -250,7 +259,6 @@ namespace mr
         double q_hat_prime = valueOf ( psi_prime,a_prime );
 
         update ( psi,a,r,q_hat_prime );
-
     }
 
     template<typename A,typename AC,typename AE>
